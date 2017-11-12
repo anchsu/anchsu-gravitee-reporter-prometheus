@@ -16,9 +16,13 @@
 package io.gravitee.reporter.prometheus.engine.impl;
 
 import io.gravitee.reporter.api.Reportable;
+import io.gravitee.reporter.api.http.Metrics;
+import io.gravitee.reporter.api.monitor.Monitor;
+import io.gravitee.reporter.prometheus.config.CpuMBean;
 import io.gravitee.reporter.prometheus.engine.ReportEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -27,7 +31,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class PrometheusReportEngine implements ReportEngine {
 
-	private final Logger LOGGER = LoggerFactory.getLogger(PrometheusReportEngine.class);
+	@Autowired
+	private CpuMBean cpuMBean;
 
 	/**
 	 * {@inheritDoc}
@@ -35,9 +40,19 @@ public final class PrometheusReportEngine implements ReportEngine {
 	@Override
 	public void report(Reportable reportable) {
 		// TODO
+        if (reportable instanceof Monitor) {
+            final Monitor monitor = (Monitor) reportable;
+            this.reportMonitor(monitor);
+        }
 	}
-	
-	/**
+
+    private void reportMonitor(Monitor monitor) {
+        final short percent = monitor.getOs().cpu.percent;
+        this.cpuMBean.setCpuPercent(String.valueOf(percent));
+
+    }
+
+    /**
 	 * {@inheritDoc}
 	 */
 	@Override
